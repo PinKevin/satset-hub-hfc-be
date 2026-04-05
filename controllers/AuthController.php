@@ -103,6 +103,11 @@ class AuthController extends BaseController {
         $validation = $this->validateRequired($data, ['noHp']);
         if ($validation) return $validation;
         
+        $lastRequest = $_SESSION['last_otp_' . $data['noHp']] ?? 0;
+        if (time() - $lastRequest < 3) { 
+            return $this->error('Anda spam, tunggu 1 menit sebelum request OTP lagi', 429);
+        }
+        
         try {
             $user = Customer::where('noHp', $data['noHp'])->first();
             
@@ -116,6 +121,7 @@ class AuthController extends BaseController {
             $user->otp_expires = time() + 300; 
             $user->save();
             
+            $_SESSION['last_otp_' . $data['noHp']] = time();
             
             return $this->success([
                 'otp_debug' => $otp 
