@@ -11,6 +11,7 @@ class Layanan extends Model {
         'idParent',
         'icon',
         'deskripsi',
+        'thumbnail',
         'gambar',
         'release_status'
     ];

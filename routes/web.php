@@ -21,6 +21,7 @@ Route::get('/promosi-modals', 'PromosiModalController@index');
 
 // layanan
 Route::get('/layanan', 'LayananController@index');
+Route::get('/layanan/{id}', 'LayananController@show');
 
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');
