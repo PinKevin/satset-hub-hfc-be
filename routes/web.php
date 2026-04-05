@@ -30,6 +30,9 @@ Route::post('/auth/verify-otp', 'AuthController@verifyOtp');
 // banner
 Route::get('/banners', 'BannerController@index');
 
+// promosi modal
+Route::get('/promosi-modals', 'PromosiModalController@index');
+
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');
 Route::post('/posts', 'PostController@store');
