@@ -47,7 +47,7 @@ class LayananController extends BaseController {
     }
 
     public function show($id) {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         try {
             $layanan = Layanan::find($id);
             

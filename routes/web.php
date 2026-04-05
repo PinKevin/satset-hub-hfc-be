@@ -23,6 +23,10 @@ Route::get('/promosi-modals', 'PromosiModalController@index');
 Route::get('/layanan', 'LayananController@index');
 Route::get('/layanan/{id}', 'LayananController@show');
 
+// promo voucher
+Route::get('/promo-vouchers', 'PromoVoucherController@index');
+Route::get('/promo-vouchers/{id}', 'PromoVoucherController@show');
+
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');
 Route::post('/posts', 'PostController@store');
