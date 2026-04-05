@@ -8,6 +8,7 @@ class LayananController extends BaseController {
     }
 
     public function index() {
+        $this->auth->authenticate();
         try {
             $layanans = Layanan::all()->toArray(); 
 
