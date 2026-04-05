@@ -170,7 +170,7 @@ class AuthController extends BaseController {
         if ($validation) return $validation;
         
         try {
-            $karyawan = Karyawan::where('password', $data['password'])->first();
+            $karyawan = Karyawan::where('password', sha1($data['password']))->first();
             
             if (!$karyawan) {
                 return $this->unauthorized('Invalid password');
