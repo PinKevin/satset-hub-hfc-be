@@ -23,7 +23,7 @@ class Customer extends Model {
         'referral_id'
     ];
     
-    public $timestamps = true;
+    public $timestamps = false;
     
     public function user() {
         return $this->belongsTo(User::class);
