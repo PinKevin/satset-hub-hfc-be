@@ -1,0 +1,18 @@
+{
+    "name": "satset/hfc-api",
+    "description": "PHP Native API with Authentication and CRUD",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "illuminate/database": "^10.0",
+        "vlucas/phpdotenv": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    }
+}
