@@ -3,22 +3,8 @@
 Route::get('/', function() {
     return [
         'status' => 'success',
-        'message' => 'API is working!',
+        'message' => 'Halo dunia',
         'version' => '1.0.0',
-        'endpoints' => [
-            'auth' => [
-                'register' => 'POST /api/auth/register',
-                'login' => 'POST /api/auth/login'
-            ],
-            'posts' => [
-                'index' => 'GET /api/posts',
-                'show' => 'GET /api/posts/{id}',
-                'store' => 'POST /api/posts',
-                'update' => 'PUT /api/posts/{id}',
-                'destroy' => 'DELETE /api/posts/{id}'
-            ]
-        ],
-        'documentation' => 'https://github.com/your-repo/api-docs'
     ];
 });
 
@@ -32,6 +18,9 @@ Route::get('/banners', 'BannerController@index');
 
 // promosi modal
 Route::get('/promosi-modals', 'PromosiModalController@index');
+
+// layanan
+Route::get('/layanan', 'LayananController@index');
 
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');
