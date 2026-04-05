@@ -2,7 +2,7 @@
 
 class AuthController extends BaseController {
     private $jwt;
-    
+     
     public function __construct() {
         $this->jwt = new JWT();
     }
@@ -10,36 +10,41 @@ class AuthController extends BaseController {
     public function register() {
         $data = $this->getRequestData();
         
-        $validation = $this->validateRequired($data, ['name', 'email', 'password']);
+        $validation = $this->validateRequired($data, [
+            'noHp',
+            'username',
+            'password'
+        ]);
+
         if ($validation) return $validation;
         
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            return $this->validationError('Invalid email format');
+        if (!preg_match('/^(\\+62|62|0)8[1-9][0-9]{6,10}$/', $data['noHp'])) {
+            return $this->validationError('Invalid phone number format');
         }
         
         try {
-            $existingUser = User::where('email', $data['email'])->first();
+            $existingUser = Customer::where('noHp', $data['noHp'])->first();
             if ($existingUser) {
-                return $this->conflict('Email already registered');
+                return $this->conflict('Phone number already registered');
             }
             
-            $user = new User();
-            $user->name = $data['name'];
-            $user->email = $data['email'];
+            $user = new Customer();
+            $user->username = $data['username'];
             $user->password = $data['password'];
+            $user->noHp = $data['noHp'];
             $user->save();
             
             $token = $this->jwt->generateToken([
-                'user_id' => $user->id,
-                'email' => $user->email,
+                'id' => $user->id,
+                'noHp' => $user->noHp,
                 'exp' => time() + 86400
             ]);
             
             return $this->created([
                 'user' => [
                     'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
+                    'username' => $user->username,
+                    'noHp' => $user->noHp,
                     'created_at' => $user->created_at
                 ],
                 'token' => $token
@@ -53,27 +58,31 @@ class AuthController extends BaseController {
     public function login() {
         $data = $this->getRequestData();
         
-        $validation = $this->validateRequired($data, ['email', 'password']);
+        $validation = $this->validateRequired($data, [
+            'noHp',
+            'username',
+            'password'
+        ]);
         if ($validation) return $validation;
         
         try {
-            $user = User::where('email', $data['email'])->first();
+            $user = Customer::where('noHp', $data['noHp'])->first();
             
             if (!$user || !$user->verifyPassword($data['password'])) {
-                return $this->unauthorized('Invalid email or password');
+                return $this->unauthorized('Invalid phone number or password');
             }
             
             $token = $this->jwt->generateToken([
-                'user_id' => $user->id,
-                'email' => $user->email,
+                'id' => $user->id,
+                'noHp' => $user->noHp,
                 'exp' => time() + 86400
             ]);
             
             return $this->success([
                 'user' => [
                     'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
+                    'username' => $user->username,
+                    'noHp' => $user->noHp,
                     'created_at' => $user->created_at
                 ],
                 'token' => $token
