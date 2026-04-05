@@ -27,10 +27,12 @@ Route::post('/auth/login', 'AuthController@login');
 Route::post('/auth/otp-forgot-password', 'AuthController@otpForgotPassword');
 Route::post('/auth/verify-otp', 'AuthController@verifyOtp');
 
+// banner
+Route::get('/banners', 'BannerController@index');
+
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');
 Route::post('/posts', 'PostController@store');
 Route::put('/posts/{id}', 'PostController@update');
 Route::patch('/posts/{id}', 'PostController@update');
 Route::delete('/posts/{id}', 'PostController@destroy');
-?>
