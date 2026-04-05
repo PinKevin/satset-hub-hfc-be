@@ -24,6 +24,8 @@ Route::get('/', function() {
 
 Route::post('/auth/register', 'AuthController@register');
 Route::post('/auth/login', 'AuthController@login');
+Route::post('/auth/otp-forgot-password', 'AuthController@otpForgotPassword');
+Route::post('/auth/verify-otp', 'AuthController@verifyOtp');
 
 Route::get('/posts', 'PostController@index');
 Route::get('/posts/{id}', 'PostController@show');

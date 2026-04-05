@@ -95,4 +95,71 @@ class AuthController extends BaseController {
             return $this->serverError('Login failed: ' . $e->getMessage());
         }
     }
+
+    public function otpForgotPassword() 
+    {
+        $data = $this->getRequestData();
+        
+        $validation = $this->validateRequired($data, ['noHp']);
+        if ($validation) return $validation;
+        
+        try {
+            $user = Customer::where('noHp', $data['noHp'])->first();
+            
+            if (!$user) {
+                return $this->notFound('Phone number not registered');
+            }
+            
+            $otp = rand(100000, 999999);
+            
+            $user->otp = $otp;
+            $user->otp_expires = time() + 300; 
+            $user->save();
+            
+            
+            return $this->success([
+                'otp_debug' => $otp 
+            ], 'OTP sent to registered phone number');
+            
+        } catch (Exception $e) {
+            return $this->serverError('Failed to send OTP: ' . $e->getMessage());
+        }
+    }
+
+    public function verifyOtp() {
+        $data = $this->getRequestData();
+        
+        $validation = $this->validateRequired($data, ['noHp', 'otp']);
+        if ($validation) return $validation;
+        
+        try {
+            $user = Customer::where('noHp', $data['noHp'])->first();
+            
+            if (!$user) {
+                return $this->notFound('Phone number not registered');
+            }
+            
+            if (!$user->otp) {
+                return $this->unauthorized('OTP not found, request new OTP');
+            }
+            
+            if ((string)$data['otp'] !== (string)$user->otp) {
+                return $this->unauthorized('Invalid OTP');
+            }
+            
+            if (time() > $user->otp_expires) {
+                return $this->unauthorized('OTP has expired');
+            }
+            
+            $user->otp = null;
+            $user->otp_expires = null;
+            $user->save();
+            
+            return $this->success(null, 'OTP verified successfully');
+            
+        } catch (Exception $e) {
+            return $this->serverError('Failed to verify OTP: ' . $e->getMessage());
+        }
+    }
+
 }
