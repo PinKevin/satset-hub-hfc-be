@@ -8,7 +8,7 @@ class PaymentVoucherController extends BaseController {
     }
 
     public function index() {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         try {
             $vouchers = PvVouchers::all();
             return $this->success($vouchers);
@@ -18,7 +18,7 @@ class PaymentVoucherController extends BaseController {
     }
 
     public function batches() {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         try {
             $batches = PvBatches::all();
             return $this->success($batches);
@@ -28,7 +28,7 @@ class PaymentVoucherController extends BaseController {
     }
 
     public function batchCreate() {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data,[
@@ -60,6 +60,7 @@ class PaymentVoucherController extends BaseController {
         if ($validation) return $validation;
 
         try{
+            DB::beginTransaction();
             $templateLayout = $this->parseJsonField($data['template_layout']);
             if ($templateLayout === false) {
                 return $this->validationError('template_layout must be a valid JSON object or array');
@@ -119,8 +120,9 @@ class PaymentVoucherController extends BaseController {
                 'is_active' => $batch->is_active,
                 'created_by' => $batch->created_by
             ],'Payment voucher batch created successfully');
-
+            DB::commit();
         }catch (Exception $e) {
+            DB::rollBack();
             return $this->serverError('Failed to create payment voucher batch: ' . $e->getMessage());
         }
     }
@@ -128,6 +130,7 @@ class PaymentVoucherController extends BaseController {
     // ini private fungsi untuk generate voucher code di model pv_voucher
 
     private function generateVoucher($batch_id, $status = 'available') {
+        $this->auth->authenticate();
         $batch = PvBatches::find($batch_id);
         if (!$batch) {
             throw new Exception('Batch not found');
@@ -171,7 +174,7 @@ class PaymentVoucherController extends BaseController {
     }
 
     public function batchEdit($id) {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data,[
@@ -203,6 +206,7 @@ class PaymentVoucherController extends BaseController {
         if ($validation) return $validation;
 
         try{
+            DB::beginTransaction();
             $batch = PvBatches::find($id);
             if(!$batch){
                 return $this->notFound('Batch not found');
@@ -266,14 +270,17 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to update payment voucher batch');
             }
+            DB::commit();
         }catch (Exception $e) {
+            DB::rollBack();
             return $this->serverError('Failed to update payment voucher batch: ' . $e->getMessage());
         }
     }
 
     public function batchDelete($id) {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         try{
+            DB::beginTransaction();
             $batch = PvBatches::find($id);
             $voucher = PvVouchers::where('batch_id', $id)->first();
             if($voucher){
@@ -289,14 +296,17 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to delete payment voucher batch');
             }
+            DB::commit();
         }catch (Exception $e) {
+            DB::rollBack();
             return $this->serverError('Failed to delete payment voucher batch: ' . $e->getMessage());
         }
     }
 
     public function batchForceDelete($id) {
-        // $this->auth->authenticate();
+        $this->auth->authenticate();
         try{
+            DB::beginTransaction();
             $batch = PvBatches::find($id);
             if(!$batch){
                 return $this->notFound('Batch not found');
@@ -309,12 +319,16 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to delete payment voucher batch');
             }
+            DB::commit();
         }catch (Exception $e) {
+            DB::rollBack();
             return $this->serverError('Failed to delete payment voucher batch: ' . $e->getMessage());
         }
     }
 
     public function userBuy() {
+        $this->auth->authenticate();
+        DB::beginTransaction();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data, [
@@ -369,10 +383,12 @@ class PaymentVoucherController extends BaseController {
         }
 
         return $this->success($purchased, 'Voucher(s) purchased successfully');
+        DB::commit();
     }
 
 
     private function updatePaymentVoucherBatches($voucher_batch_id, $sold_qty){
+        $this->auth->authenticate();
         $batch = PvBatches::find($voucher_batch_id);
         if(!$batch) return;
 
@@ -393,6 +409,8 @@ class PaymentVoucherController extends BaseController {
     }
 
     public function transfer() {
+        $this->auth->authenticate();
+        DB::beginTransaction();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data, [
@@ -426,9 +444,12 @@ class PaymentVoucherController extends BaseController {
         }
 
         return $this->success(null, 'Voucher(s) transferred successfully');
+        DB::commit();
     }
 
     public function userUse() {
+        $this->auth->authenticate();
+        DB::beginTransaction();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data, [
@@ -466,9 +487,11 @@ class PaymentVoucherController extends BaseController {
         $this->redemptions($voucherIds[0], $data['user_id'], $data['layanan_id'], $check_voucher->face_value);
 
         return $this->success(null, 'Voucher(s) used successfully');
+        DB::commit();
     }
 
     private function redemptions($voucher_id,$user_id,$id_layanan,$value){
+    $this->auth->authenticate();    
         $redemption = new PvRedemptions();
         $redemption->voucher_id = $voucher_id;
         $redemption->user_id = $user_id;
