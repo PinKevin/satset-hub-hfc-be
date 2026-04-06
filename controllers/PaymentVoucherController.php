@@ -446,7 +446,7 @@ class PaymentVoucherController extends BaseController {
         $check_voucher = PvBatches::whereIn('id', function($query) use ($voucherIds){
             $query->select('batch_id')->from('pv_vouchers')->whereIn('id', $voucherIds);
         })->where('id_layanan', $data['layanan_id'])->first();
-        
+
         if(!$check_voucher){
             return $this->serverError('Some vouchers are not valid for this Service');
         }
@@ -463,6 +463,17 @@ class PaymentVoucherController extends BaseController {
             $voucher->save();
         }
 
+        $this->redemptions($voucherIds[0], $data['user_id'], $data['layanan_id'], $check_voucher->face_value);
+
         return $this->success(null, 'Voucher(s) used successfully');
+    }
+
+    private function redemptions($voucher_id,$user_id,$id_layanan,$value){
+        $redemption = new PvRedemptions();
+        $redemption->voucher_id = $voucher_id;
+        $redemption->user_id = $user_id;
+        $redemption->id_layanan = $id_layanan;
+        $redemption->redeemed_value = $value;
+        $redemption->save();
     }
 }
