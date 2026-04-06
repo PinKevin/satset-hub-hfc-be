@@ -364,6 +364,10 @@ class PaymentVoucherController extends BaseController {
             $this->updatePaymentVoucherBatches($batchId, $soldQty);
         }
 
+        foreach($vouchers as $voucher){
+            $this->paymentVoucherTransfer($data['user_id'], $voucher->id);
+        }
+
         return $this->success($purchased, 'Voucher(s) purchased successfully');
     }
 
@@ -378,5 +382,13 @@ class PaymentVoucherController extends BaseController {
         $toAdd = min($sold_qty, $available);
         $batch->sold_qty += $toAdd;
         $batch->save();
+    }
+
+    private function paymentVoucherTransfer($user_id,$voucher_id){
+        $pv_transfer = new PvTransfers();
+        $pv_transfer->voucher_id = $voucher_id;
+        $pv_transfer->to_user_id = $user_id;
+        $pv_transfer->transfer_type = "purchase";
+        $pv_transfer->save();
     }
 }
