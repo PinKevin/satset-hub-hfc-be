@@ -28,7 +28,8 @@ class PvBatches extends Model {
         'template_layout',
         'output_format',
         'is_active',
-        'created_by'
+        'created_by',
+        'generated_qty'
     ];
     
     public $timestamps = true;

@@ -27,12 +27,11 @@ class PaymentVoucherController extends BaseController {
         }
     }
 
-    public function batchCreate(Request $request) {
+    public function batchCreate() {
         // $this->auth->authenticate();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data,[
-            'batch_name',
             'batch_name',
             'voucher_prefix',
             'id_layanan',
@@ -61,6 +60,11 @@ class PaymentVoucherController extends BaseController {
         if ($validation) return $validation;
 
         try{
+            $templateLayout = $this->parseJsonField($data['template_layout']);
+            if ($templateLayout === false) {
+                return $this->validationError('template_layout must be a valid JSON object or array');
+            }
+
             $batch = new PvBatches();
             $batch->batch_name = $data['batch_name'];
             $batch->voucher_prefix = $data['voucher_prefix'];
@@ -81,11 +85,13 @@ class PaymentVoucherController extends BaseController {
             $batch->code_font_size = $data['code_font_size'];
             $batch->code_color = $data['code_color'];
             $batch->code_rotation = $data['code_rotation'];
-            $batch->template_layout = $data['template_layout'];
+            $batch->template_layout = $templateLayout;
             $batch->output_format = $data['output_format'];
             $batch->is_active = $data['is_active'];
             $batch->created_by = $data['created_by'];
             $batch->save();
+
+            $this->generateVoucher($batch->id,'available');
 
             return $this->created([
                 'id' => $batch->id,
@@ -114,7 +120,6 @@ class PaymentVoucherController extends BaseController {
                 'created_by' => $batch->created_by
             ],'Payment voucher batch created successfully');
 
-            $this->generateVoucher($batch->id,'available');
         }catch (Exception $e) {
             return $this->serverError('Failed to create payment voucher batch: ' . $e->getMessage());
         }
@@ -122,25 +127,47 @@ class PaymentVoucherController extends BaseController {
 
     // ini private fungsi untuk generate voucher code di model pv_voucher
 
-    private function generateVoucher($batch_id,$status){
-        // $this->auth->authenticate();
+    private function generateVoucher($batch_id, $status = 'available') {
         $batch = PvBatches::find($batch_id);
-        if(!$batch){
+        if (!$batch) {
             throw new Exception('Batch not found');
         }
 
-        $voucher_code = $batch->voucher_prefix . str_pad($batch->sold_qty + 1, 6, '0', STR_PAD_LEFT);
-        $voucher = new PvVouchers();
-        $voucher->batch_id = $batch_id;
-        $voucher->voucher_code = $voucher_code;
-        $voucher->face_value = $batch->face_value;
-        $voucher->status = $status;
-        $voucher->save();
+        $remaining = $batch->total_qty - $batch->generated_qty;
+        if ($remaining <= 0) {
+            throw new Exception('All vouchers already generated for this batch');
+        }
 
-        $batch->sold_qty += 1;
-        $batch->save();
+        $vouchersCreated = [];
 
-        return $voucher;
+        DB::beginTransaction();
+        try {
+            for ($i = 0; $i < $remaining; $i++) {
+                $nextNumber = $batch->generated_qty + 1;
+
+                $voucherCode = $batch->voucher_prefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+                $voucher = new PvVouchers();
+                $voucher->batch_id = $batch->id;
+                $voucher->voucher_code = $voucherCode;
+                $voucher->face_value = $batch->face_value;
+                $voucher->status = $status;
+                $voucher->save();
+
+                $vouchersCreated[] = $voucher;
+
+                $batch->generated_qty += 1;
+            }
+
+            $batch->save();
+            DB::commit();
+
+            return $vouchersCreated;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new Exception('Failed to generate vouchers: ' . $e->getMessage());
+        }
     }
 
     public function batchEdit($id) {
@@ -169,7 +196,8 @@ class PaymentVoucherController extends BaseController {
             'code_rotation',
             'template_layout',
             'output_format',
-            'is_active'
+            'is_active',
+            'generated_qty'
         ]);
 
         if ($validation) return $validation;
@@ -199,7 +227,13 @@ class PaymentVoucherController extends BaseController {
             $batch->code_font_size = $data['code_font_size'];
             $batch->code_color = $data['code_color'];
             $batch->code_rotation = $data['code_rotation'];
-            $batch->template_layout = $data['template_layout'];
+
+            $templateLayout = $this->parseJsonField($data['template_layout']);
+            if ($templateLayout === false) {
+                return $this->validationError('template_layout must be a valid JSON object or array');
+            }
+
+            $batch->template_layout = $templateLayout;
             $batch->output_format = $data['output_format'];
             $batch->is_active = $data['is_active'];
             

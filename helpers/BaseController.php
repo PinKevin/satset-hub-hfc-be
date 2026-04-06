@@ -56,5 +56,23 @@ class BaseController {
         
         return null;
     }
+
+    protected function parseJsonField($value) {
+        if (is_array($value)) {
+            $json = json_encode($value);
+            return $json === false ? false : $json;
+        }
+
+        if (!is_string($value)) {
+            return false;
+        }
+
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $value;
+        }
+
+        return false;
+    }
 }
 ?>
