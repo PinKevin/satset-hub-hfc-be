@@ -499,4 +499,19 @@ class PaymentVoucherController extends BaseController {
         $redemption->redeemed_value = $value;
         $redemption->save();
     }
+
+    public function userVouchers() {
+        $this->auth->authenticate();
+        $user_id = $_GET['user_id'] ?? null;
+        if (!$user_id) {
+            return $this->validationError('user_id is required');
+        }
+
+        try {
+            $vouchers = PvVouchers::where('current_owner_id', $user_id)->get();
+            return $this->success($vouchers);
+        } catch (Exception $e) {
+            return $this->serverError('Failed to fetch user vouchers: ' . $e->getMessage());
+        }
+    }
 }
