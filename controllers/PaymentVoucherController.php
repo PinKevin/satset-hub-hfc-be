@@ -427,4 +427,42 @@ class PaymentVoucherController extends BaseController {
 
         return $this->success(null, 'Voucher(s) transferred successfully');
     }
+
+    public function userUse() {
+        $data = $this->getRequestData();
+
+        $validation = $this->validateRequired($data, [
+            'user_id',
+            'voucher_id',
+            'layanan_id'
+        ]);
+        if ($validation) return $validation;
+
+        $voucherIds = $data['voucher_id'];
+        if(!is_array($voucherIds)){
+            $voucherIds = [$voucherIds];
+        }
+
+        $check_voucher = PvBatches::whereIn('id', function($query) use ($voucherIds){
+            $query->select('batch_id')->from('pv_vouchers')->whereIn('id', $voucherIds);
+        })->where('id_layanan', $data['layanan_id'])->first();
+        
+        if(!$check_voucher){
+            return $this->serverError('Some vouchers are not valid for this Service');
+        }
+
+        $vouchers = PvVouchers::whereIn('id', $voucherIds)->where('current_owner_id', $data['user_id'])->where('status', 'sold')->get();
+
+        if(count($vouchers) !== count($voucherIds)){
+            return $this->serverError('Some vouchers are not available for use');
+        }
+
+        foreach($vouchers as $voucher){
+            $voucher->status = 'used';
+            $voucher->used_at = date('Y-m-d H:i:s');
+            $voucher->save();
+        }
+
+        return $this->success(null, 'Voucher(s) used successfully');
+    }
 }

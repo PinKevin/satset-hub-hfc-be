@@ -39,3 +39,4 @@ Route::delete('/payment-vouchers/batches/{id}/delete', 'PaymentVoucherController
 Route::delete('/payment-vouchers/batches/{id}/force-delete', 'PaymentVoucherController@batchForceDelete');
 Route::post('/payment-vouchers/user-buy', 'PaymentVoucherController@userBuy');
 Route::post('/payment-vouchers/transfer', 'PaymentVoucherController@transfer');
+Route::post('/payment-vouchers/user-use', 'PaymentVoucherController@userUse');
