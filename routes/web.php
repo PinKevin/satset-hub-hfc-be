@@ -38,3 +38,4 @@ Route::put('/payment-vouchers/batches/{id}/edit', 'PaymentVoucherController@batc
 Route::delete('/payment-vouchers/batches/{id}/delete', 'PaymentVoucherController@batchDelete');
 Route::delete('/payment-vouchers/batches/{id}/force-delete', 'PaymentVoucherController@batchForceDelete');
 Route::post('/payment-vouchers/user-buy', 'PaymentVoucherController@userBuy');
+Route::post('/payment-vouchers/transfer', 'PaymentVoucherController@transfer');

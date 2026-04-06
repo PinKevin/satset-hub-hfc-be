@@ -391,4 +391,40 @@ class PaymentVoucherController extends BaseController {
         $pv_transfer->transfer_type = "purchase";
         $pv_transfer->save();
     }
+
+    public function transfer() {
+        $data = $this->getRequestData();
+
+        $validation = $this->validateRequired($data, [
+            'from_user_id',
+            'to_user_id',
+            'voucher_id',
+            'transfer_type'
+        ]);
+        if ($validation) return $validation;
+
+        $voucherIds = $data['voucher_id'];
+        if(!is_array($voucherIds)){
+            $voucherIds = [$voucherIds];
+        }
+
+        $vouchers = PvVouchers::whereIn('id', $voucherIds)->where('current_owner_id', $data['from_user_id'])->where('status', 'sold')->get();
+
+        if(count($vouchers) !== count($voucherIds)){
+            return $this->serverError('Some vouchers are not available for transfer');
+        }
+
+        foreach($vouchers as $voucher){
+            $voucher->current_owner_id = $data['to_user_id'];
+            $voucher->save();
+
+            $pv_transfer = new PvTransfers();
+            $pv_transfer->voucher_id = $voucher->id;
+            $pv_transfer->to_user_id = $data['to_user_id'];
+            $pv_transfer->transfer_type = $data['transfer_type'];
+            $pv_transfer->save();
+        }
+
+        return $this->success(null, 'Voucher(s) transferred successfully');
+    }
 }
