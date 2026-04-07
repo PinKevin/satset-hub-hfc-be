@@ -175,7 +175,6 @@ class AuthController extends BaseController {
         }
     }
 
-    // ini untuk self auth di web lain kalau mau akses API ini, cukup masukan password dan dicocokan dengan tb_karyawan. karena di web itu nanti akan kirim username jadi kita tinggal cocokan password untuk mendapatkan token akses
     public function selfAuth() {
         $data = $this->getRequestData();
         
@@ -206,6 +205,29 @@ class AuthController extends BaseController {
             
         } catch (Exception $e) {
             return $this->serverError('Authentication failed: ' . $e->getMessage());
+        }
+    }
+
+    public function resetPassword() {
+        $data = $this->getRequestData();
+        
+        $validation = $this->validateRequired($data, ['noHp', 'newPassword']);
+        if ($validation) return $validation;
+        
+        try {
+            $user = Customer::where('noHp', $data['noHp'])->first();
+            
+            if (!$user) {
+                return $this->notFound('Phone number not registered');
+            }
+            
+            $user->password = password_hash($data['newPassword'], PASSWORD_DEFAULT);
+            $user->save();
+            
+            return $this->success(null, 'Password reset successful');
+            
+        } catch (Exception $e) {
+            return $this->serverError('Failed to reset password: ' . $e->getMessage());
         }
     }
 

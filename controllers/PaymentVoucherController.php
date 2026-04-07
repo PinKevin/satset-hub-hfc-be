@@ -33,6 +33,7 @@ class PaymentVoucherController extends BaseController {
 
         $validation = $this->validateRequired($data,[
             'batch_name',
+            'type',
             'voucher_prefix',
             'id_layanan',
             'face_value',
@@ -60,7 +61,7 @@ class PaymentVoucherController extends BaseController {
         if ($validation) return $validation;
 
         try{
-            DB::beginTransaction();
+            // DB::beginTransaction();
             $templateLayout = $this->parseJsonField($data['template_layout']);
             if ($templateLayout === false) {
                 return $this->validationError('template_layout must be a valid JSON object or array');
@@ -68,6 +69,7 @@ class PaymentVoucherController extends BaseController {
 
             $batch = new PvBatches();
             $batch->batch_name = $data['batch_name'];
+            $batch->type = $data['type'];
             $batch->voucher_prefix = $data['voucher_prefix'];
             $batch->id_layanan = $data['id_layanan'];
             $batch->face_value = $data['face_value'];
@@ -97,6 +99,7 @@ class PaymentVoucherController extends BaseController {
             return $this->created([
                 'id' => $batch->id,
                 'batch_name' => $batch->batch_name,
+                'type' => $batch->type,
                 'voucher_prefix' => $batch->voucher_prefix,
                 'id_layanan' => $batch->id_layanan,
                 'face_value' => $batch->face_value,
@@ -118,11 +121,12 @@ class PaymentVoucherController extends BaseController {
                 'template_layout' => $batch->template_layout,
                 'output_format' => $batch->output_format,
                 'is_active' => $batch->is_active,
-                'created_by' => $batch->created_by
+                'created_by' => $batch->created_by,
+                'type' => $batch->type
             ],'Payment voucher batch created successfully');
-            DB::commit();
+            // DB::commit();
         }catch (Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return $this->serverError('Failed to create payment voucher batch: ' . $e->getMessage());
         }
     }
@@ -179,6 +183,7 @@ class PaymentVoucherController extends BaseController {
 
         $validation = $this->validateRequired($data,[
             'batch_name',
+            'type',
             'voucher_prefix',
             'id_layanan',
             'face_value',
@@ -206,13 +211,14 @@ class PaymentVoucherController extends BaseController {
         if ($validation) return $validation;
 
         try{
-            DB::beginTransaction();
+            // DB::beginTransaction();
             $batch = PvBatches::find($id);
             if(!$batch){
                 return $this->notFound('Batch not found');
             }
 
             $batch->batch_name = $data['batch_name'];
+            $batch->type = $data['type'];
             $batch->voucher_prefix = $data['voucher_prefix'];
             $batch->id_layanan = $data['id_layanan'];
             $batch->face_value = $data['face_value'];
@@ -245,6 +251,7 @@ class PaymentVoucherController extends BaseController {
                 return $this->success([
                     'id' => $batch->id,
                     'batch_name' => $batch->batch_name,
+                    'type' => $batch->type,
                     'voucher_prefix' => $batch->voucher_prefix,
                     'id_layanan' => $batch->id_layanan,
                     'face_value' => $batch->face_value,
@@ -270,9 +277,9 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to update payment voucher batch');
             }
-            DB::commit();
+            // DB::commit();
         }catch (Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return $this->serverError('Failed to update payment voucher batch: ' . $e->getMessage());
         }
     }
@@ -280,7 +287,7 @@ class PaymentVoucherController extends BaseController {
     public function batchDelete($id) {
         $this->auth->authenticate();
         try{
-            DB::beginTransaction();
+            // DB::beginTransaction();
             $batch = PvBatches::find($id);
             $voucher = PvVouchers::where('batch_id', $id)->first();
             if($voucher){
@@ -296,9 +303,9 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to delete payment voucher batch');
             }
-            DB::commit();
+            // DB::commit();
         }catch (Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return $this->serverError('Failed to delete payment voucher batch: ' . $e->getMessage());
         }
     }
@@ -306,7 +313,7 @@ class PaymentVoucherController extends BaseController {
     public function batchForceDelete($id) {
         $this->auth->authenticate();
         try{
-            DB::beginTransaction();
+            // DB::beginTransaction();
             $batch = PvBatches::find($id);
             if(!$batch){
                 return $this->notFound('Batch not found');
@@ -319,9 +326,9 @@ class PaymentVoucherController extends BaseController {
             }else{
                 return $this->serverError('Failed to delete payment voucher batch');
             }
-            DB::commit();
+            // DB::commit();
         }catch (Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return $this->serverError('Failed to delete payment voucher batch: ' . $e->getMessage());
         }
     }

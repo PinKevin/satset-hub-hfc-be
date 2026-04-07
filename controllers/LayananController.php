@@ -24,6 +24,7 @@ class LayananController extends BaseController {
                     'icon' => $item['icon'],
                     'harga' => $item['harga'],
                     'thumbnail' => $item['thumbnail'],
+                    'gambar' => $item['gambar'],
                     'release_status' => $item['release_status'],
                     'children' => []
                 ];
@@ -46,10 +47,10 @@ class LayananController extends BaseController {
         }
     }
 
-    public function show($id) {
+    public function show($kode) {
         $this->auth->authenticate();
         try {
-            $layanan = Layanan::find($id);
+            $layanan = Layanan::where('kode', $kode)->first();
             
             if (!$layanan) {
                 return $this->notFound('Layanan not found');

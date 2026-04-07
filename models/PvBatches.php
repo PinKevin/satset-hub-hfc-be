@@ -7,6 +7,7 @@ class PvBatches extends Model {
     protected $fillable = [
         'id',
         'batch_name',
+        'type',
         'voucher_prefix',
         'id_layanan',
         'face_value',

@@ -12,6 +12,7 @@ Route::post('/auth/register', 'AuthController@register');
 Route::post('/auth/login', 'AuthController@login');
 Route::post('/auth/otp-forgot-password', 'AuthController@otpForgotPassword');
 Route::post('/auth/verify-otp', 'AuthController@verifyOtp');
+Route::post('/auth/reset-password', 'AuthController@resetPassword');
 Route::post('/auth/self-auth', 'AuthController@selfAuth');
 
 // banner
@@ -22,7 +23,7 @@ Route::get('/promosi-modals', 'PromosiModalController@index');
 
 // layanan
 Route::get('/layanan', 'LayananController@index');
-Route::get('/layanan/{id}', 'LayananController@show');
+Route::get('/layanan/{kode}', 'LayananController@show');
 
 // promo voucher
 Route::get('/promo-vouchers', 'PromoVoucherController@index');
