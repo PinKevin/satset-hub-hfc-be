@@ -335,7 +335,7 @@ class PaymentVoucherController extends BaseController {
 
     public function userBuy() {
         $this->auth->authenticate();
-        DB::beginTransaction();
+        // DB::beginTransaction();
         $data = $this->getRequestData();
 
         $validation = $this->validateRequired($data, [
@@ -390,7 +390,7 @@ class PaymentVoucherController extends BaseController {
         }
 
         return $this->success($purchased, 'Voucher(s) purchased successfully');
-        DB::commit();
+        // DB::commit();
     }
 
 
