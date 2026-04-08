@@ -522,6 +522,11 @@ class PaymentVoucherController extends BaseController {
 
         try {
             $vouchers = PvVouchers::where('current_owner_id', $user_id)->get();
+            $voucher_batch = PvBatches::whereIn('id', $vouchers->pluck('batch_id'))->get()->keyBy('id');
+
+             foreach($vouchers as $voucher){
+                $voucher->batch_info = $voucher_batch[$voucher->batch_id] ?? null;
+            }
             return $this->success($vouchers);
         } catch (Exception $e) {
             return $this->serverError('Failed to fetch user vouchers: ' . $e->getMessage());
