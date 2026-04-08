@@ -64,6 +64,26 @@ class OrderController extends BaseController {
         }
     }
 
+    public function orderHistory() {
+        $data = $this->getRequestData();
+
+        $validation = $this->validateRequired($data, [
+            'user_id',
+        ]);
+        if ($validation) return $validation;
+        $user_id = $data['user_id'];
+        if (!$user_id) {
+            return $this->validationError('user_id is required');
+        }
+
+        try {
+            $order = Order::with('inquiry')->where('idCustomer', $user_id)->get();
+            return $this->success($order);
+        } catch (Exception $e) {
+            return $this->serverError('Failed to fetch user orders: ' . $e->getMessage());
+        }
+    }   
+
     private function generateInquiryCode() {
         $date = date('ymd');
         $prefix = "CUST" . $date;
