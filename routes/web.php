@@ -54,3 +54,16 @@ Route::get('/customer', 'CustomerController@index');
 Route::put('/customer/update', 'CustomerController@update');
 Route::post('/customer/request-update-otp', 'CustomerController@requestUpdateOtp');
 Route::post('/customer/verify-update-otp', 'CustomerController@verifyUpdateOtp');
+
+// lokasi
+Route::get('/lokasi', 'LokasiController@index');
+Route::get('/lokasi/{id}', 'LokasiController@detail');
+Route::post('/lokasi/create', 'LokasiController@create');
+Route::put('/lokasi/{id}/edit', 'LokasiController@edit');
+Route::delete('/lokasi/{id}/delete', 'LokasiController@delete');
+
+// location
+Route::get('/provinces', 'LokasiController@getProvinces');
+Route::get('/regencies/{id}', 'LokasiController@getRegencies');
+Route::get('/districts/{id}', 'LokasiController@getDistricts');
+Route::get('/villages/{id}', 'LokasiController@getVillages');
