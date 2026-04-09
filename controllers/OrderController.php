@@ -84,6 +84,59 @@ class OrderController extends BaseController {
         }
     }   
 
+    public function checkAvailableRanger() {
+        $data = $this->getRequestData();
+
+        $validation = $this->validateRequired($data, [
+            'tgl',
+            'jam'
+        ]);
+
+        if ($validation) return $validation;
+
+        try {
+            $tgl = $data['tgl'];
+            $jam = $data['jam'];
+            $dateTime = $tgl . ' ' . $jam;
+
+            // 1. Get all active rangers for the given date
+            $activeRangerIds = StockRanger::where('tgl', $tgl)
+                ->where('status', '!=', 0)
+                ->pluck('idRanger')
+                ->toArray();
+
+            if (empty($activeRangerIds)) {
+                return $this->success(['available_ranger' => 0], 'No active rangers found for this date');
+            }
+
+            // 2. Get all orders at the specific date and time
+            $orders = Order::where('tglPekerjaan', $dateTime)->get();
+
+            $occupiedRangerIds = [];
+            foreach ($orders as $order) {
+                if ($order->idMitra) {
+                    $mitraData = json_decode($order->idMitra, true);
+                    if (isset($mitraData['id']) && is_array($mitraData['id'])) {
+                        $occupiedRangerIds = array_merge($occupiedRangerIds, $mitraData['id']);
+                    }
+                }
+            }
+
+            // 3. Subtract occupied rangers from active rangers
+            $occupiedRangerIds = array_unique($occupiedRangerIds);
+            $availableRangers = array_diff($activeRangerIds, $occupiedRangerIds);
+
+            return $this->success([
+                'available_ranger' => count($availableRangers),
+                'total_active' => count($activeRangerIds),
+                'total_occupied' => count(array_intersect($activeRangerIds, $occupiedRangerIds))
+            ]);
+
+        } catch (Exception $e) {
+            return $this->serverError('Failed to check available rangers: ' . $e->getMessage());
+        }
+    }
+
     private function generateInquiryCode() {
         $date = date('ymd');
         $prefix = "CUST" . $date;
