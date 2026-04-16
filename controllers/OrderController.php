@@ -77,7 +77,9 @@ class OrderController extends BaseController {
         }
 
         try {
-            $order = Order::with('inquiry')->where('idCustomer', $user_id)->get();
+            $order = Order::with(['inquiry' => function($query) {
+                $query->with('logs');
+            }])->where('idCustomer', $user_id)->get();
             return $this->success($order);
         } catch (Exception $e) {
             return $this->serverError('Failed to fetch user orders: ' . $e->getMessage());

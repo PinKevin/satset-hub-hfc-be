@@ -47,4 +47,9 @@ class Inquiry extends Model
     {
         return $this->hasOne(Order::class, 'idInquiry');
     }
+
+    public function logs()
+    {
+        return $this->hasMany(LogInquiry::class, 'idInquiry')->orderBy('tgl', 'desc');
+    }
 }

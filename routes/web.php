@@ -49,6 +49,7 @@ Route::get('/payment-vouchers/generate-image-voucher/{id}', 'PaymentVoucherContr
 Route::post('/order', 'OrderController@orderCreate');
 Route::get('/order/history', 'OrderController@orderHistory');
 Route::post('/order/check-available-ranger', 'OrderController@checkAvailableRanger');
+Route::get('/tracking/{id}', 'TrackingController@index');
 
 // customer
 Route::get('/customer', 'CustomerController@index');
