@@ -25,4 +25,28 @@ class PromosiModal extends Model {
     
     public $timestamps = true;
 
+    /**
+     * Check if the modal is currently showing (active and within date range)
+     */
+    public function isCurrentlyShowing(): bool
+    {
+        // Check is_active
+        if (!$this->is_active) {
+            return false;
+        }
+
+        $now = now();
+
+        // Check mulai_tampil (start date)
+        if ($this->mulai_tampil && $now < $this->mulai_tampil) {
+            return false;
+        }
+
+        // Check selesai_tampil (end date)
+        if ($this->selesai_tampil && $now > $this->selesai_tampil) {
+            return false;
+        }
+
+        return true;
+    }
 }
