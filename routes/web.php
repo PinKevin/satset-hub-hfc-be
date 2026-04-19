@@ -27,6 +27,14 @@ Route::get('/layanan/{kode}', 'LayananController@show');
 
 // promo voucher
 Route::get('/promo-vouchers', 'PromoVoucherController@index');
+Route::get('/promo-vouchers/campaigns', 'PromoVoucherController@campaigns');
+Route::get('/promo-vouchers/campaigns/{id}', 'PromoVoucherController@campaignDetail');
+Route::post('/promo-vouchers/claim', 'PromoVoucherController@claim');
+Route::post('/promo-vouchers/transfer', 'PromoVoucherController@transfer');
+Route::post('/promo-vouchers/use', 'PromoVoucherController@use');
+Route::get('/promo-vouchers/user', 'PromoVoucherController@userVouchers');
+Route::get('/promo-vouchers/user/history', 'PromoVoucherController@userVoucherHistory');
+Route::get('/promo-vouchers/generate-image-voucher/{id}', 'PromoVoucherController@generateImageVoucher');
 
 // payment voucher
 Route::get('/payment-vouchers', 'PaymentVoucherController@index');
