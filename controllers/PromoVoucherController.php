@@ -148,7 +148,7 @@ class PromoVoucherController extends BaseController {
             }
 
             $existingVoucher = PmVouchers::where('campaign_id', $data['campaign_id'])
-                ->where('current_owner_id', $this->auth->user()->id)
+                ->where('current_owner_id', $this->auth->user()['id'])
                 ->first();
 
             if ($existingVoucher) {
@@ -158,8 +158,8 @@ class PromoVoucherController extends BaseController {
             $voucher = PmVouchers::create([
                 'campaign_id' => $data['campaign_id'],
                 'voucher_code' => strtoupper(uniqid('PROMO-')),
-                'current_owner_id' => $this->auth->user()->id,
-                'original_owner_id' => $this->auth->user()->id,
+                'current_owner_id' => $this->auth->user()['id'],
+                'original_owner_id' => $this->auth->user()['id'],
                 'status' => 'claimed',
                 'claimed_at' => date('Y-m-d H:i:s'),
             ]);
@@ -183,7 +183,7 @@ class PromoVoucherController extends BaseController {
                 return $this->notFound('Voucher not found');
             }
 
-            if ($voucher->current_owner_id != $this->auth->user()->id) {
+            if ($voucher->current_owner_id != $this->auth->user()['id']) {
                 return $this->forbidden('You do not own this voucher');
             }
 
@@ -192,9 +192,9 @@ class PromoVoucherController extends BaseController {
 
             PmTransfers::create([
                 'voucher_id' => $voucher->id,
-                'from_user_id' => $this->auth->user()->id,
+                'from_user_id' => $this->auth->user()['id'],
                 'to_user_id' => $data['to_user_id'],
-                'transfer_type' => 'manual',
+                'transfer_type' => 'transfer',
                 'notes' => 'Voucher transferred by user',
             ]);
 
@@ -217,7 +217,7 @@ class PromoVoucherController extends BaseController {
                 return $this->notFound('Voucher not found');
             }
 
-            if ($voucher->current_owner_id != $this->auth->user()->id) {
+            if ($voucher->current_owner_id != $this->auth->user()['id']) {
                 return $this->forbidden('You do not own this voucher');
             }
 
@@ -231,7 +231,7 @@ class PromoVoucherController extends BaseController {
 
             PmRedemptions::create([
                 'voucher_id' => $voucher->id,
-                'user_id' => $this->auth->user()->id,
+                'user_id' => $this->auth->user()['id'],
                 'redeemed_at' => date('Y-m-d H:i:s'),
             ]);
 
@@ -244,7 +244,7 @@ class PromoVoucherController extends BaseController {
     public function userVouchers() {
         $this->auth->authenticate();
         try {
-            $vouchers = PmVouchers::where('current_owner_id', $this->auth->user()->id)->get();
+            $vouchers = PmVouchers::where('current_owner_id', $this->auth->user()['id'])->get();
             return $this->success($vouchers);
         } catch (Exception $e) {
             return $this->serverError('Failed to fetch user vouchers: ' . $e->getMessage());
@@ -254,7 +254,7 @@ class PromoVoucherController extends BaseController {
     public function userVoucherHistory() {
         $this->auth->authenticate();
         try {
-            $vouchers = PmVouchers::where('original_owner_id', $this->auth->user()->id)->get();
+            $vouchers = PmVouchers::where('original_owner_id', $this->auth->user()['id'])->get();
             return $this->success($vouchers);
         } catch (Exception $e) {
             return $this->serverError('Failed to fetch user voucher history: ' . $e->getMessage());

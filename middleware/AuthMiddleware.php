@@ -2,6 +2,7 @@
 
 class AuthMiddleware {
     private $jwt;
+    private $user;
     
     public function __construct() {
         $this->jwt = new JWT();
@@ -29,7 +30,12 @@ class AuthMiddleware {
             exit;
         }
         
+        $this->user = $payload;
         return $payload;
+    }
+    
+    public function user() {
+        return $this->user;
     }
     
     private function sendUnauthorizedResponse($message) {
