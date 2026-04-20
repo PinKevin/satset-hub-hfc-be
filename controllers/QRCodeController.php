@@ -355,7 +355,7 @@ class QRCodeController extends BaseController {
                 'transaction_id' => $data['transaction_id'] ?? null,
                 'discount_amount' => $this->calculateDiscount($campaign, $data['transaction_amount'] ?? 0),
                 'lat' => $data['lat'] ?? null,
-                'lang' => $data['lng'] ?? null
+                'lng' => $data['lng'] ?? null
             ]);
 
             $this->clearOTPSession($userId, 'redeem');
@@ -405,28 +405,4 @@ class QRCodeController extends BaseController {
             ->update(['is_used' => true]);
     }
 
-    private function calculateDistance($lat1, $lng1, $lat2, $lng2) {
-        $earthRadius = 6371000; // meters
-        
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-        
-        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng/2) * sin($dLng/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        
-        return $earthRadius * $c;
-    }
-
-    private function calculateDiscount($campaign, $transactionAmount) {
-        if ($transactionAmount < $campaign->min_transaction) {
-            return 0;
-        }
-
-        if ($campaign->discount_type === 'percentage') {
-            $discount = ($transactionAmount * $campaign->discount_value) / 100;
-            return min($discount, $campaign->max_discount);
-        } else {
-            return $campaign->discount_value;
-        }
-    }
 }

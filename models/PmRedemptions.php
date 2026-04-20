@@ -12,6 +12,6 @@ class PmRedemptions extends Model
         'transaction_id',
         'discount_amount',
         'lat',
-        'lang',
+        'lng',
     ];
 }

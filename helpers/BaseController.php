@@ -13,6 +13,10 @@ class BaseController {
         return ResponseHelper::created($data, $message);
     }
     
+    protected function badRequest($message = 'Bad request') {
+        return ResponseHelper::badRequest($message);
+    }
+    
     protected function notFound($message = 'Resource not found') {
         return ResponseHelper::notFound($message);
     }
@@ -73,6 +77,31 @@ class BaseController {
         }
 
         return false;
+    }
+
+    protected function calculateDistance($lat1, $lng1, $lat2, $lng2) {
+        $earthRadius = 6371000; // meters
+        
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        
+        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng/2) * sin($dLng/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        
+        return $earthRadius * $c;
+    }
+
+    protected function calculateDiscount($campaign, $transactionAmount) {
+        if ($transactionAmount < $campaign->min_transaction) {
+            return 0;
+        }
+
+        if ($campaign->discount_type === 'percentage') {
+            $discount = ($transactionAmount * $campaign->discount_value) / 100;
+            return min($discount, $campaign->max_discount);
+        } else {
+            return $campaign->discount_value;
+        }
     }
 }
 ?>

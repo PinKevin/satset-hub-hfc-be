@@ -225,17 +225,55 @@ class PromoVoucherController extends BaseController {
                 return $this->badRequest('Voucher has already been used');
             }
 
-            $voucher->status = 'used';
-            $voucher->used_at = date('Y-m-d H:i:s');
-            $voucher->save();
+            $campaign = PmCampaigns::find($voucher->campaign_id);
+            if (!$campaign) {
+                return $this->notFound('Campaign not found');
+            }
 
-            PmRedemptions::create([
-                'voucher_id' => $voucher->id,
-                'user_id' => $this->auth->user()['id'],
-                'redeemed_at' => date('Y-m-d H:i:s'),
-            ]);
+            if (!$campaign->is_active) {
+                return $this->badRequest('Campaign is not active');
+            }
 
-            return $this->success($voucher, 'Voucher used successfully');
+            if (strtotime($campaign->valid_until) < time()) {
+                return $this->badRequest('Voucher has expired');
+            }
+
+            if (strtotime($campaign->valid_from) > time()) {
+                return $this->badRequest('Voucher is not yet valid');
+            }
+
+            if (isset($data['lat']) && isset($data['lng'])) {
+                $distance = $this->calculateDistance(
+                    $data['lat'], $data['lng'], 
+                    $campaign->lat, $campaign->lng
+                );
+                
+                if ($distance > $campaign->radius_meter) {
+                    return $this->badRequest('You are outside the valid radius for this voucher');
+                }
+            }
+
+            DB::beginTransaction();
+            try {
+                $voucher->status = 'used';
+                $voucher->used_at = date('Y-m-d H:i:s');
+                $voucher->save();
+
+                PmRedemptions::create([
+                    'voucher_id' => $voucher->id,
+                    'user_id' => $this->auth->user()['id'],
+                    'transaction_id' => $data['transaction_id'] ?? null,
+                    'discount_amount' => $this->calculateDiscount($campaign, $data['transaction_amount'] ?? 0),
+                    'lat' => $data['lat'] ?? null,
+                    'lng' => $data['lng'] ?? null
+                ]);
+
+                DB::commit();
+                return $this->success($voucher, 'Voucher used successfully');
+            } catch (Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
         } catch (Exception $e) {
             return $this->serverError('Failed to use voucher: ' . $e->getMessage());
         }

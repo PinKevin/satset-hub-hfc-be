@@ -35,6 +35,10 @@ class ResponseHelper {
         return self::success($data, $message, 201);
     }
     
+    public static function badRequest($message = 'Bad request') {
+        return self::error($message, 400);
+    }
+    
     public static function notFound($message = 'Resource not found') {
         return self::error($message, 404);
     }
