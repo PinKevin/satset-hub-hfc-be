@@ -88,3 +88,7 @@ Route::get('/provinces', 'LokasiController@getProvinces');
 Route::get('/regencies/{id}', 'LokasiController@getRegencies');
 Route::get('/districts/{id}', 'LokasiController@getDistricts');
 Route::get('/villages/{id}', 'LokasiController@getVillages');
+ 
+// proxy
+Route::get('/api/proxy/search', 'ProxyController@search');
+Route::get('/api/proxy/reverse', 'ProxyController@reverse');
